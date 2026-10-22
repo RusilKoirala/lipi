@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "sh",
+      "args": ["-c", "cd website && npx shadcn@latest mcp"]
+    }
+  }
+}

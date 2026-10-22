@@ -11,11 +11,31 @@ import (
 	"github.com/rusilkoirala/lipi/parser"
 )
 
+// version is set when a release is built:
+// go build -ldflags "-X main.version=v0.1.0"
+var version = "dev"
+
+func usage() {
+	fmt.Printf("Lipi %s\n\n", version)
+	fmt.Println("Prayog:")
+	fmt.Println("  lipi <file.lip>     program chalau")
+	fmt.Println("  lipi --version      version hera")
+	fmt.Println("  lipi --help         yo sahayata")
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Lipi 0.1")
-		fmt.Println("Prayog: lipi <file.lip>")
+		usage()
 		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "-v", "--version", "version":
+		fmt.Printf("lipi %s\n", version)
+		return
+	case "-h", "--help", "help":
+		usage()
+		return
 	}
 
 	path := os.Args[1]

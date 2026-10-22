@@ -1,0 +1,2 @@
+# Keep the install script runnable on macOS/Linux even if checked out on Windows.
+install.sh text eol=lf

@@ -1,0 +1,159 @@
+# Release Lipi.
+#
+# Push a version tag to publish a release:
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# This builds lipi for every platform, builds the Windows setup wizard,
+# tests both installers, and attaches everything to a GitHub release.
+# Running it by hand (Actions → Release → Run workflow) does everything
+# except publishing, so you can download lipi-setup.exe and try it first.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      app_version: ${{ steps.version.outputs.app_version }}
+      file_version: ${{ steps.version.outputs.file_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Work out the version
+        id: version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then version="${GITHUB_REF_NAME}"; else version="v0.0.0-dev"; fi
+          app_version="${version#v}"
+          file_version="$(echo "$app_version" | grep -oE '^[0-9]+(\.[0-9]+){0,3}')"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "app_version=$app_version" >> "$GITHUB_OUTPUT"
+          echo "file_version=$file_version" >> "$GITHUB_OUTPUT"
+          echo "Building $version (installer $app_version, file version $file_version)"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build binaries
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p out
+          for target in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
+            os=${target%/*}
+            arch=${target#*/}
+            ext=""
+            if [ "$os" = "windows" ]; then ext=".exe"; fi
+            CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath \
+              -ldflags="-s -w -X main.version=$VERSION" \
+              -o "out/lipi-$os-$arch$ext" .
+          done
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: out/*
+
+  windows-installer:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: out
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build lipi-setup.exe
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
+            "/DAppVersion=${{ needs.build.outputs.app_version }}" `
+            "/DFileVersion=${{ needs.build.outputs.file_version }}" `
+            installer\lipi.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
+          Get-Item out\lipi-setup.exe
+
+      - name: Test the installer (install, run, uninstall)
+        shell: pwsh
+        run: |
+          Start-Process -Wait -FilePath out\lipi-setup.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'
+
+          $dir = "$env:LOCALAPPDATA\Programs\Lipi"
+          & "$dir\bin\lipi.exe" --version
+          if ($LASTEXITCODE -ne 0) { throw "lipi.exe did not run" }
+          Get-ChildItem "$dir\examples\*.lip" | ForEach-Object { & "$dir\bin\lipi.exe" $_.FullName }
+
+          $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+          if ($userPath -notlike "*Lipi\bin*") { throw "PATH was not updated: $userPath" }
+          Write-Host "PATH ok: $userPath"
+
+          # The uninstaller restarts itself from a temp folder, so wait for the files to disappear.
+          Start-Process -FilePath "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'
+          for ($i = 0; $i -lt 60 -and (Test-Path "$dir\bin\lipi.exe"); $i++) { Start-Sleep -Seconds 1 }
+          Start-Sleep -Seconds 2
+          if (Test-Path "$dir\bin\lipi.exe") { throw "Uninstall did not remove lipi.exe" }
+
+          $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+          if ($userPath -like "*Lipi\bin*") { throw "PATH still has Lipi after uninstall: $userPath" }
+          Write-Host "Uninstall ok"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: out/lipi-setup.exe
+
+  release:
+    needs: [build, windows-installer]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd out
+          sha256sum lipi-* > checksums.txt
+          cat checksums.txt
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true
+
+  # Install the release we just published, exactly as a user would.
+  verify-install-script:
+    needs: release
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: curl | sh
+        run: curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install.sh" | LIPI_VERSION="${{ github.ref_name }}" sh
+
+      - name: lipi runs
+        run: |
+          ~/.lipi/bin/lipi --version
+          printf 'rakha naam = "Ram";\nbhana("Namaste, " + naam);\n' > hello.lip
+          ~/.lipi/bin/lipi hello.lip
