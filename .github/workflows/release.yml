@@ -26,11 +26,12 @@ jobs:
       app_version: ${{ steps.version.outputs.app_version }}
       file_version: ${{ steps.version.outputs.file_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+          cache: false # lipi has no dependencies, so there is nothing to cache
 
       - name: Work out the version
         id: version
@@ -62,7 +63,7 @@ jobs:
           done
           ls -la out
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: binaries
           path: out/*
@@ -71,9 +72,9 @@ jobs:
     needs: build
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: binaries
           path: out
@@ -115,7 +116,7 @@ jobs:
           if ($userPath -like "*Lipi\bin*") { throw "PATH still has Lipi after uninstall: $userPath" }
           Write-Host "Uninstall ok"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installer
           path: out/lipi-setup.exe
@@ -125,7 +126,7 @@ jobs:
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: out
           merge-multiple: true
@@ -136,7 +137,7 @@ jobs:
           sha256sum lipi-* > checksums.txt
           cat checksums.txt
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: out/*
           generate_release_notes: true
