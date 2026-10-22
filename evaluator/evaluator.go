@@ -14,6 +14,12 @@ var (
 	NULL  = &object.Null{}
 )
 
+// A function calling itself forever would crash Go, so we stop it here.
+// The browser playground sets this lower because its stack is smaller.
+var MaxCallDepth = 10000
+
+var callDepth = 0
+
 // Eval walks the tree and runs it.
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
@@ -242,6 +248,12 @@ func applyFunction(node *ast.CallExpression, fn object.Object, args []object.Obj
 			return newError(line, "'%s' lai %d ota input chahinchha, %d ota aayo",
 				node.Function.String(), len(fn.Parameters), len(args))
 		}
+
+		if callDepth >= MaxCallDepth {
+			return newError(line, "'%s' le aafailai dherai patak bolayo (recursion rokiyena)", node.Function.String())
+		}
+		callDepth++
+		defer func() { callDepth-- }()
 
 		// new scope for this call: a = 2, b = 3
 		callEnv := object.NewEnclosedEnvironment(fn.Env)

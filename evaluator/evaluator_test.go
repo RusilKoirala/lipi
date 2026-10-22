@@ -56,6 +56,7 @@ func TestErrors(t *testing.T) {
 		{"rakha x = 5;\nrakha y = z;", "Galti: line 2 ma 'z' bhanne naam bhetiyena"},
 		{"10 / 0;", "Galti: line 1 ma 0 le bhag garna mildaina"},
 		{"-sahi;", "Galti: line 1 ma sahi/galat lai '-' garna mildaina"},
+		{"kaam f(n) { farkau f(n + 1); }\nf(1);", "Galti: line 1 ma 'f' le aafailai dherai patak bolayo (recursion rokiyena)"},
 	}
 
 	for _, tt := range tests {
