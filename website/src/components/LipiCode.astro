@@ -1,0 +1,18 @@
+---
+import { Code } from "astro:components";
+import { lipiDark, lipiGrammar, lipiLight } from "@/lib/lipi-grammar";
+
+interface Props {
+  code: string;
+  class?: string;
+}
+const { code, class: className } = Astro.props;
+---
+
+<Code
+  code={code.replace(/\n$/, "")}
+  lang={structuredClone(lipiGrammar) as any}
+  themes={{ light: lipiLight as any, dark: lipiDark as any }}
+  defaultColor={false}
+  class={className}
+/>

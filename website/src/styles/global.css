@@ -1,0 +1,351 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "@fontsource/rozha-one";
+@import "@fontsource/mukta/400.css";
+@import "@fontsource/mukta/500.css";
+
+
+
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Lipi — design tokens.
+  Layout: ink-on-paper pages; headings "hang" from a top rule like the
+  shirorekha (शिरोरेखा) of Devanagari. One accent: the crimson of the flag.
+*/
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-deva: "Rozha One", "Kohinoor Devanagari", "Noto Serif Devanagari", serif;
+  --font-deva-text: "Mukta", "Kohinoor Devanagari", "Noto Sans Devanagari", sans-serif;
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --color-crimson: var(--crimson);
+  --color-crimson-soft: var(--crimson-soft);
+  --color-flagblue: var(--flagblue);
+  --color-paper: var(--paper);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(0.992 0.002 30);
+  --foreground: oklch(0.21 0.022 268);
+  --paper: oklch(0.975 0.004 268);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.022 268);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.022 268);
+  --primary: oklch(0.21 0.022 268);
+  --primary-foreground: oklch(0.985 0.002 268);
+  --secondary: oklch(0.962 0.005 268);
+  --secondary-foreground: oklch(0.21 0.022 268);
+  --muted: oklch(0.962 0.005 268);
+  --muted-foreground: oklch(0.5 0.02 268);
+  --accent: oklch(0.955 0.006 268);
+  --accent-foreground: oklch(0.21 0.022 268);
+  --destructive: oklch(0.53 0.21 22);
+  --border: oklch(0.912 0.007 268);
+  --input: oklch(0.89 0.008 268);
+  --ring: oklch(0.53 0.21 22 / 0.55);
+  --radius: 0.5rem;
+
+  --crimson: oklch(0.53 0.21 22);
+  --crimson-soft: oklch(0.955 0.03 18);
+  --flagblue: oklch(0.42 0.15 262);
+
+  --syn-keyword: #c8102e;
+  --syn-string: #1f4ea3;
+  --syn-constant: #7a4a12;
+  --syn-builtin: #1c2030;
+  --syn-comment: #8b90a0;
+  --syn-operator: #6b7080;
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.985 0.002 268);
+  --sidebar-foreground: oklch(0.21 0.022 268);
+  --sidebar-primary: oklch(0.21 0.022 268);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.955 0.006 268);
+  --sidebar-accent-foreground: oklch(0.21 0.022 268);
+  --sidebar-border: oklch(0.912 0.007 268);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.165 0.014 268);
+  --foreground: oklch(0.95 0.006 268);
+  --paper: oklch(0.195 0.016 268);
+  --card: oklch(0.2 0.016 268);
+  --card-foreground: oklch(0.95 0.006 268);
+  --popover: oklch(0.21 0.016 268);
+  --popover-foreground: oklch(0.95 0.006 268);
+  --primary: oklch(0.95 0.006 268);
+  --primary-foreground: oklch(0.18 0.014 268);
+  --secondary: oklch(0.24 0.016 268);
+  --secondary-foreground: oklch(0.95 0.006 268);
+  --muted: oklch(0.24 0.016 268);
+  --muted-foreground: oklch(0.7 0.016 268);
+  --accent: oklch(0.25 0.016 268);
+  --accent-foreground: oklch(0.95 0.006 268);
+  --destructive: oklch(0.68 0.2 18);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.68 0.2 18 / 0.6);
+
+  --crimson: oklch(0.68 0.2 18);
+  --crimson-soft: oklch(0.32 0.09 18 / 0.45);
+  --flagblue: oklch(0.76 0.11 258);
+
+  --syn-keyword: #ff5d72;
+  --syn-string: #93b6ff;
+  --syn-constant: #e3b37a;
+  --syn-builtin: #e7e9f0;
+  --syn-comment: #6f7487;
+  --syn-operator: #a0a5b5;
+
+  --sidebar: oklch(0.19 0.014 268);
+  --sidebar-foreground: oklch(0.95 0.006 268);
+  --sidebar-primary: oklch(0.95 0.006 268);
+  --sidebar-primary-foreground: oklch(0.18 0.014 268);
+  --sidebar-accent: oklch(0.25 0.016 268);
+  --sidebar-accent-foreground: oklch(0.95 0.006 268);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--crimson) 22%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* A heading that hangs from a rule, like Devanagari letters hang from the shirorekha. */
+  .shiro {
+    display: inline-block;
+    border-top: 2px solid currentColor;
+    padding-top: 0.55rem;
+  }
+  .shiro-crimson {
+    border-top-color: var(--crimson);
+  }
+
+  .eyebrow {
+    @apply flex w-fit flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground;
+  }
+  .eyebrow .ne {
+    font-family: var(--font-deva-text);
+    font-weight: 500;
+    color: var(--crimson);
+  }
+
+  /* Shiki output (static code blocks + docs, class "astro-code") with light/dark colours. */
+  .astro-code,
+  .astro-code span {
+    color: var(--shiki-light);
+    font-style: var(--shiki-light-font-style);
+    background-color: transparent !important;
+  }
+  .dark .astro-code,
+  .dark .astro-code span {
+    color: var(--shiki-dark);
+    font-style: var(--shiki-dark-font-style);
+  }
+  .astro-code {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .astro-code code {
+    font-family: inherit;
+  }
+}
+
+/* ---------- Docs prose ---------- */
+.prose-lipi {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--foreground);
+  max-width: 68ch;
+}
+.prose-lipi > * + * {
+  margin-top: 1.1em;
+}
+.prose-lipi h1 {
+  font-size: 2.25rem;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.prose-lipi h2 {
+  margin-top: 2.6em;
+  font-size: 1.4rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: inline-block;
+  border-top: 2px solid var(--foreground);
+  padding-top: 0.45rem;
+}
+.prose-lipi h3 {
+  margin-top: 2em;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.prose-lipi h2 + *,
+.prose-lipi h3 + * {
+  margin-top: 0.75em;
+}
+.prose-lipi a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--crimson);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+.prose-lipi a:hover {
+  color: var(--crimson);
+}
+.prose-lipi strong {
+  font-weight: 600;
+}
+.prose-lipi ul,
+.prose-lipi ol {
+  padding-left: 1.3em;
+}
+.prose-lipi ul {
+  list-style: disc;
+}
+.prose-lipi ol {
+  list-style: decimal;
+}
+.prose-lipi li + li {
+  margin-top: 0.35em;
+}
+.prose-lipi li::marker {
+  color: var(--muted-foreground);
+}
+.prose-lipi :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.12em 0.36em;
+  border-radius: 0.3rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+}
+.prose-lipi pre {
+  padding: 1rem 1.15rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
+  background: var(--paper) !important;
+}
+.prose-lipi blockquote {
+  border-left: 2px solid var(--crimson);
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+}
+.prose-lipi table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  display: block;
+  overflow-x: auto;
+}
+.prose-lipi th,
+.prose-lipi td {
+  text-align: left;
+  padding: 0.55rem 0.9rem 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.prose-lipi th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.prose-lipi hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

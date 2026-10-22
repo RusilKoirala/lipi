@@ -1,0 +1,121 @@
+---
+import { GITHUB_URL, href } from "@/lib/site";
+import GitHubIcon from "./GitHubIcon.astro";
+
+const path = Astro.url.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/";
+const links = [
+  { to: "/playground", label: "Playground" },
+  { to: "/docs/introduction", label: "Docs", match: "/docs" },
+  { to: "/examples", label: "Examples" },
+  { to: "/install", label: "Install" },
+];
+const isActive = (l: (typeof links)[number]) => path.startsWith(l.match ?? l.to);
+---
+
+<header
+  class="sticky top-0 z-40 border-b bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md supports-[backdrop-filter]:bg-background/70"
+>
+  <div class="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-4 sm:px-6">
+    <a href={href("/")} class="group flex items-baseline gap-2" aria-label="Lipi home">
+      <span class="font-deva text-[1.65rem] leading-none" lang="ne">लिपि</span>
+      <span class="font-mono text-xs text-muted-foreground transition-colors group-hover:text-crimson">lipi</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 text-sm md:flex" aria-label="Main">
+      {
+        links.map((l) => (
+          <a
+            href={href(l.to)}
+            aria-current={isActive(l) ? "page" : undefined}
+            class:list={[
+              "rounded-md px-3 py-1.5 transition-colors hover:text-foreground",
+              isActive(l) ? "text-foreground" : "text-muted-foreground",
+            ]}
+          >
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <button
+        type="button"
+        id="theme-toggle"
+        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        aria-label="Switch between light and dark mode"
+      >
+        <svg class="size-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+        <svg class="hidden size-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+      </button>
+
+      <a
+        href={GITHUB_URL}
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-sm transition-colors hover:bg-muted"
+        aria-label="Star Lipi on GitHub"
+      >
+        <GitHubIcon class="size-4" />
+        <span>Star</span>
+        <span data-gh-stars hidden class="border-l pl-2 font-mono text-xs text-muted-foreground tabular-nums"></span>
+      </a>
+    </div>
+  </div>
+
+  <nav class="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto border-t px-2 py-1 text-sm md:hidden" aria-label="Main">
+    {
+      links.map((l) => (
+        <a
+          href={href(l.to)}
+          aria-current={isActive(l) ? "page" : undefined}
+          class:list={[
+            "shrink-0 rounded-md px-3 py-1.5",
+            isActive(l) ? "bg-muted text-foreground" : "text-muted-foreground",
+          ]}
+        >
+          {l.label}
+        </a>
+      ))
+    }
+  </nav>
+</header>
+
+<script>
+  import { GITHUB_REPO_API } from "@/lib/site";
+
+  document.getElementById("theme-toggle")?.addEventListener("click", () => {
+    const dark = !document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", dark);
+    try {
+      localStorage.setItem("theme", dark ? "dark" : "light");
+    } catch {}
+  });
+
+  // Show the star count next to every "Star" button once GitHub answers.
+  async function stars(): Promise<number | null> {
+    try {
+      const cached = sessionStorage.getItem("lipi-stars");
+      if (cached) return Number(cached);
+    } catch {}
+    try {
+      const res = await fetch(GITHUB_REPO_API);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (typeof data.stargazers_count !== "number") return null;
+      try {
+        sessionStorage.setItem("lipi-stars", String(data.stargazers_count));
+      } catch {}
+      return data.stargazers_count;
+    } catch {
+      return null;
+    }
+  }
+
+  stars().then((n) => {
+    if (!n) return; // hide the badge until there is at least one star
+    const text = n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+    document.querySelectorAll<HTMLElement>("[data-gh-stars]").forEach((el) => {
+      el.textContent = text;
+      el.hidden = false;
+    });
+  });
+</script>

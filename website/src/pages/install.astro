@@ -1,0 +1,76 @@
+---
+import Base from "@/layouts/Base.astro";
+import CommandBlock from "@/components/CommandBlock.astro";
+import LipiCode from "@/components/LipiCode.astro";
+import InstallTabs from "@/components/InstallTabs";
+import { GITHUB_URL, GO_INSTALL_CMD, href } from "@/lib/site";
+
+const hello = `rakha naam = "Sansar";
+bhana("Namaste, " + naam + "!");
+`;
+---
+
+<Base title="Install" description="Install lipi on macOS, Linux or Windows. One command on Mac and Linux, a setup wizard on Windows.">
+  <div class="mx-auto w-full max-w-3xl px-4 pt-14 pb-24 sm:px-6">
+    <p class="eyebrow"><span class="ne" lang="ne">स्थापना</span> · Install</p>
+    <h1 class="shiro mt-4 text-4xl font-semibold tracking-tight">Get lipi on your computer</h1>
+    <p class="mt-4 text-muted-foreground">
+      After installing, typing <code class="font-mono text-[0.9em] text-foreground">lipi</code> in any terminal works.
+      Just want to try it first? Use the <a href={href("/playground")} class="text-foreground underline decoration-crimson underline-offset-2">playground</a>, no install needed.
+    </p>
+
+    <section class="mt-12">
+      <InstallTabs client:load />
+    </section>
+
+    <section class="mt-16 border-t pt-12">
+      <h2 class="shiro shiro-crimson text-2xl font-semibold tracking-tight">Your first program</h2>
+      <ol class="mt-6 grid gap-6">
+        <li class="grid gap-3">
+          <p><span class="mr-2 font-deva-text font-medium text-crimson" aria-hidden="true">१</span>Save this as <code class="font-mono">namaste.lip</code>:</p>
+          <div class="overflow-hidden rounded-xl border bg-card px-4 py-3.5">
+            <LipiCode code={hello} />
+          </div>
+        </li>
+        <li class="grid gap-3">
+          <p><span class="mr-2 font-deva-text font-medium text-crimson" aria-hidden="true">२</span>Run it from the same folder:</p>
+          <CommandBlock cmd="lipi namaste.lip" />
+        </li>
+        <li class="grid gap-3">
+          <p><span class="mr-2 font-deva-text font-medium text-crimson" aria-hidden="true">३</span>You should see:</p>
+          <pre class="rounded-lg border bg-paper px-4 py-3 font-mono text-[13px]">Namaste, Sansar!</pre>
+        </li>
+      </ol>
+      <p class="mt-8 text-muted-foreground">
+        Next, learn the language in the <a href={href("/docs/introduction")} class="text-foreground underline decoration-crimson underline-offset-2">docs</a>
+        or borrow a program from the <a href={href("/examples")} class="text-foreground underline decoration-crimson underline-offset-2">examples</a>.
+      </p>
+    </section>
+
+    <section class="mt-16 border-t pt-12">
+      <h2 class="text-xl font-semibold tracking-tight">Other ways to install</h2>
+
+      <h3 class="mt-8 font-medium">With Go</h3>
+      <p class="mt-1.5 text-muted-foreground">
+        If you already have <a href="https://go.dev/dl/" class="text-foreground underline decoration-crimson underline-offset-2">Go 1.26 or newer</a>.
+        The program goes into <code class="font-mono text-foreground">~/go/bin</code>, which must be on your PATH.
+      </p>
+      <CommandBlock cmd={GO_INSTALL_CMD} class="mt-4" />
+
+      <h3 class="mt-10 font-medium">From source</h3>
+      <p class="mt-1.5 text-muted-foreground">For reading the code or changing the language itself.</p>
+      <div class="mt-4 grid gap-3">
+        <CommandBlock cmd={`git clone ${GITHUB_URL}.git && cd lipi`} />
+        <CommandBlock cmd="go build -o lipi ." />
+        <CommandBlock cmd="go test ./..." />
+      </div>
+
+      <h3 class="mt-10 font-medium">Uninstall on macOS or Linux</h3>
+      <p class="mt-1.5 text-muted-foreground">
+        Delete the folder, then remove the two lines marked <code class="font-mono text-foreground"># lipi</code> from
+        <code class="font-mono text-foreground">~/.zshrc</code> (or <code class="font-mono text-foreground">~/.bashrc</code>).
+      </p>
+      <CommandBlock cmd="rm -rf ~/.lipi" class="mt-4" />
+    </section>
+  </div>
+</Base>

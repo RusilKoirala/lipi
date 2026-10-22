@@ -1,0 +1,141 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { GITHUB_URL, href } from "@/lib/site";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return docs.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+
+const SECTIONS = ["Start", "Language", "More"] as const;
+const all = (await getCollection("docs")).sort((a, b) => {
+  const s = SECTIONS.indexOf(a.data.section) - SECTIONS.indexOf(b.data.section);
+  return s !== 0 ? s : a.data.order - b.data.order;
+});
+const index = all.findIndex((d) => d.id === entry.id);
+const prev = all[index - 1];
+const next = all[index + 1];
+const toc = headings.filter((h) => h.depth === 2);
+---
+
+<Base title={entry.data.title} description={entry.data.description}>
+  <div class="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 pt-10 pb-24 sm:px-6 md:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
+    <!-- Sidebar -->
+    <aside class="md:sticky md:top-24 md:max-h-[calc(100dvh-7rem)] md:self-start md:overflow-y-auto">
+      <details class="group rounded-lg border px-3 py-2 md:hidden">
+        <summary class="cursor-pointer list-none text-sm font-medium">
+          <span class="text-muted-foreground">Docs ·</span> {entry.data.title}
+        </summary>
+        <nav class="mt-3 pb-1" aria-label="Docs">
+          <ul class="grid gap-1 text-sm">
+            {
+              all.map((d) => (
+                <li>
+                  <a href={href(`/docs/${d.id}`)} class:list={["block py-1", d.id === entry.id ? "text-crimson" : "text-muted-foreground"]}>
+                    {d.data.title}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </details>
+
+      <nav class="hidden md:block" aria-label="Docs">
+        {
+          SECTIONS.map((section) => (
+            <div class="mb-7">
+              <p class="mb-2 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">{section}</p>
+              <ul class="grid gap-0.5 border-l text-sm">
+                {all
+                  .filter((d) => d.data.section === section)
+                  .map((d) => (
+                    <li>
+                      <a
+                        href={href(`/docs/${d.id}`)}
+                        aria-current={d.id === entry.id ? "page" : undefined}
+                        class:list={[
+                          "-ml-px block border-l py-1 pl-3 transition-colors",
+                          d.id === entry.id
+                            ? "border-crimson font-medium text-foreground"
+                            : "border-transparent text-muted-foreground hover:border-foreground/30 hover:text-foreground",
+                        ]}
+                      >
+                        {d.data.title}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <!-- Article -->
+    <article class="min-w-0">
+      <p class="eyebrow">
+        {entry.data.ne && <span class="ne" lang="ne">{entry.data.ne}</span>}
+        {entry.data.ne && <span aria-hidden="true">·</span>}
+        <span>{entry.data.section}</span>
+      </p>
+      <h1 class="mt-3 text-4xl font-semibold tracking-tight">{entry.data.title}</h1>
+      <p class="mt-3 max-w-[60ch] text-lg text-muted-foreground">{entry.data.description}</p>
+
+      <div class="prose-lipi mt-10">
+        <Content />
+      </div>
+
+      <nav class="mt-16 grid gap-4 border-t pt-8 sm:grid-cols-2" aria-label="Previous and next page">
+        {
+          prev ? (
+            <a href={href(`/docs/${prev.id}`)} class="group rounded-lg border p-4 transition-colors hover:border-foreground/30">
+              <span class="text-xs text-muted-foreground">Previous</span>
+              <span class="mt-1 block font-medium group-hover:text-crimson">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a href={href(`/docs/${next.id}`)} class="group rounded-lg border p-4 text-right transition-colors hover:border-foreground/30">
+              <span class="text-xs text-muted-foreground">Next</span>
+              <span class="mt-1 block font-medium group-hover:text-crimson">{next.data.title}</span>
+            </a>
+          )
+        }
+      </nav>
+      <p class="mt-8 text-sm text-muted-foreground">
+        Found a mistake on this page? <a
+          href={`${GITHUB_URL}/blob/master/website/src/content/docs/${entry.id}.md`}
+          class="underline decoration-crimson underline-offset-2 hover:text-foreground">Edit it on GitHub</a
+        >.
+      </p>
+    </article>
+
+    <!-- On this page -->
+    {
+      toc.length > 1 && (
+        <aside class="hidden xl:block">
+          <div class="sticky top-24">
+            <p class="mb-2 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">On this page</p>
+            <ul class="grid gap-1.5 text-sm">
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`} class="text-muted-foreground hover:text-foreground">
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      )
+    }
+  </div>
+</Base>

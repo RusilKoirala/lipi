@@ -1,0 +1,242 @@
+---
+import Base from "@/layouts/Base.astro";
+import CommandBlock from "@/components/CommandBlock.astro";
+import GitHubIcon from "@/components/GitHubIcon.astro";
+import Playground from "@/components/lipi/Playground";
+import { BOOK_URL, GITHUB_URL, INSTALL_CMD, href } from "@/lib/site";
+
+const dictionary = [
+  { word: "rakha", ne: "राख", en: "let", means: "Keep a value under a name.", ex: 'rakha naam = "Sita";' },
+  { word: "kaam", ne: "काम", en: "function", means: "A piece of work you can call again.", ex: "kaam jod(a, b) { … }" },
+  { word: "farkau", ne: "फर्काउ", en: "return", means: "Send a value back from a kaam.", ex: "farkau a + b;" },
+  { word: "yadi", ne: "यदि", en: "if", means: "Run a block only when the condition holds.", ex: "yadi (umer > 17) { … }" },
+  { word: "natra", ne: "नत्र", en: "else", means: "Otherwise, run this block instead.", ex: "} natra { … }" },
+  { word: "sahi · galat", ne: "सही · गलत", en: "true · false", means: "The two answers a question can have.", ex: "rakha thik = sahi;" },
+  { word: "bhana", ne: "भन", en: "print", means: "Say something on the screen.", ex: 'bhana("Namaste");' },
+  { word: "lambai", ne: "लम्बाइ", en: "len", means: "How many letters a string has.", ex: 'lambai("Pokhara")' },
+];
+
+const errors = [
+  { file: "hisab.lip", msg: "Galti: line 3 ma semicolon birsiyo", en: "Line 3: you forgot a semicolon." },
+  { file: "naam.lip", msg: "Galti: line 7 ma 'umer' bhanne naam bhetiyena", en: "Line 7: no name called 'umer' was found." },
+  { file: "jod.lip", msg: "Galti: line 2 ma sankhya ra string jodna mildaina", en: "Line 2: a number and a string can't be added." },
+];
+
+const steps = [
+  {
+    n: "१",
+    title: "Lexer",
+    body: "Reads your file one character at a time and cuts it into tokens: rakha, naam, =, \"Ram\". Every token remembers its line, which is how a Galti can point at line 3.",
+  },
+  {
+    n: "२",
+    title: "Parser",
+    body: "A Pratt parser arranges the tokens into a tree. Each operator has a strength, so 1 + 2 * 3 becomes 1 + (2 * 3) without any special cases.",
+  },
+  {
+    n: "३",
+    title: "Evaluator",
+    body: "Walks the tree and runs it. Variables live in environments that point to the scope around them, which is what makes closures work.",
+  },
+  {
+    n: "४",
+    title: "Everywhere",
+    body: "The same Go code builds the lipi command for your terminal and the WebAssembly file that runs the editor on this page.",
+  },
+];
+---
+
+<Base>
+  <!-- Hero -->
+  <section class="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-x-14 gap-y-12 px-4 pt-12 pb-20 sm:px-6 md:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,31rem)]">
+    <div class="min-w-0">
+      <p class="eyebrow">
+        <span class="ne" lang="ne">नेपालीमा प्रोग्रामिङ</span>
+        <span aria-hidden="true">·</span>
+        <span>Programming in Nepali</span>
+      </p>
+
+      <h1 class="mt-4 font-deva text-[clamp(6.5rem,19vw,12.5rem)] leading-[1.02] font-normal tracking-tight" lang="ne">
+        लिपि<span class="sr-only"> (Lipi), a programming language</span>
+      </h1>
+
+      <p class="mt-5 max-w-[34rem] text-lg leading-relaxed text-pretty">
+        <span class="font-semibold">lipi</span>
+        <span class="font-mono text-sm text-muted-foreground">/li·pi/</span>
+        <em class="text-crimson not-italic">n.</em>
+        <span class="text-muted-foreground"> 1. script; writing.</span>
+        <span class="block mt-1">
+          <span class="text-muted-foreground">2.</span> A small programming language you write with Nepali words, and that
+          tells you where you went wrong in Nepali too.
+        </span>
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          href={href("/playground")}
+          class="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          Open the playground
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a
+          href={GITHUB_URL}
+          class="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          <GitHubIcon class="size-4" />
+          Star on GitHub
+          <span data-gh-stars hidden class="border-l pl-2 font-mono text-xs text-muted-foreground tabular-nums"></span>
+        </a>
+      </div>
+
+      <CommandBlock cmd={INSTALL_CMD} class="mt-6 w-fit" />
+    </div>
+
+    <div class="min-w-0">
+      <Playground compact client:visible />
+      <p class="mt-3 text-center text-xs text-muted-foreground">
+        This is the real interpreter, compiled from Go to WebAssembly. Edit the code and press Run.
+      </p>
+    </div>
+  </section>
+
+  <!-- Dictionary -->
+  <section class="border-t bg-paper">
+    <div class="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:gap-14">
+        <div>
+          <p class="eyebrow"><span class="ne" lang="ne">शब्दकोश</span> · Dictionary</p>
+          <h2 class="shiro mt-4 text-3xl font-semibold tracking-tight">Eight words to learn</h2>
+          <p class="mt-4 text-muted-foreground">
+            Lipi uses everyday Nepali words for the few things every program needs. If you can say it, you can write it.
+          </p>
+          <a
+            href={href("/docs/introduction")}
+            class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium underline decoration-crimson decoration-[1.5px] underline-offset-4 hover:text-crimson"
+            >Read the docs</a
+          >
+        </div>
+
+        <dl class="grid min-w-0 grid-cols-1 sm:grid-cols-2 sm:gap-x-10">
+          {
+            dictionary.map((d) => (
+              <div class="min-w-0 border-t py-5">
+                <dt class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span class="font-mono text-[15px] font-medium text-crimson">{d.word}</span>
+                  <span class="font-deva-text text-[15px] text-muted-foreground" lang="ne">
+                    {d.ne}
+                  </span>
+                  <span class="ml-auto rounded border px-1.5 font-mono text-[11px] text-muted-foreground">{d.en}</span>
+                </dt>
+                <dd class="mt-1.5 text-[15px]">{d.means}</dd>
+                <dd class="mt-2 overflow-x-auto font-mono text-[13px] whitespace-nowrap text-muted-foreground">{d.ex}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- Galti -->
+  <section class="border-t">
+    <div class="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
+      <div>
+        <p class="eyebrow"><span class="ne" lang="ne">गल्ती</span> · Galti</p>
+        <h2 class="shiro shiro-crimson mt-4 text-3xl font-semibold tracking-tight">Errors that speak your language</h2>
+        <p class="mt-4 max-w-md text-muted-foreground">
+          When something goes wrong, Lipi says what happened and on which line, in plain Nepali. Beginners get a message
+          they can read, not a stack trace.
+        </p>
+        <a
+          href={href("/playground#example=galti")}
+          class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium underline decoration-crimson decoration-[1.5px] underline-offset-4 hover:text-crimson"
+          >Try breaking a program</a
+        >
+      </div>
+
+      <div class="min-w-0 overflow-hidden rounded-xl border bg-[oklch(0.19_0.016_268)] text-[oklch(0.93_0.006_268)] shadow-[0_24px_48px_-32px_oklch(0.2_0.02_268/0.5)]">
+        <div class="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
+          <span class="size-2.5 rounded-full bg-white/15"></span>
+          <span class="size-2.5 rounded-full bg-white/15"></span>
+          <span class="size-2.5 rounded-full bg-white/15"></span>
+          <span class="ml-3 font-mono text-xs text-white/45">terminal</span>
+        </div>
+        <div class="grid gap-5 overflow-x-auto p-5 font-mono text-[13px] leading-relaxed">
+          {
+            errors.map((e) => (
+              <div>
+                <p class="whitespace-nowrap">
+                  <span class="text-white/40">$</span> lipi {e.file}
+                </p>
+                <p class="whitespace-nowrap text-[#ff6b7e]">{e.msg}</p>
+                <p class="mt-0.5 font-sans text-xs whitespace-nowrap text-white/45">{e.en}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="border-t bg-paper">
+    <div class="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+      <p class="eyebrow"><span class="ne" lang="ne">कसरी चल्छ</span> · How it runs</p>
+      <h2 class="shiro mt-4 text-3xl font-semibold tracking-tight">From text to answer in four steps</h2>
+
+      <ol class="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          steps.map((s) => (
+            <li class="min-w-0">
+              <span class="font-deva-text text-4xl leading-none font-medium text-crimson" aria-hidden="true">
+                {s.n}
+              </span>
+              <h3 class="mt-3 font-semibold">{s.title}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">{s.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="mt-12 text-sm text-muted-foreground">
+        Lipi was built step by step following
+        <a href={BOOK_URL} class="text-foreground underline decoration-crimson underline-offset-2 hover:text-crimson"
+          >Writing an Interpreter in Go</a
+        > by Thorsten Ball, with Nepali keywords and error messages swapped in.
+        <a href={href("/docs/how-it-works")} class="text-foreground underline decoration-crimson underline-offset-2 hover:text-crimson"
+          >Read how it works</a
+        >.
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="border-t">
+    <div class="mx-auto grid w-full max-w-6xl grid-cols-1 items-end gap-10 px-4 py-24 sm:px-6 md:grid-cols-[minmax(0,1fr)_auto]">
+      <div>
+        <h2 class="text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
+          <span class="font-deva font-normal" lang="ne">लिपि</span> is open source.
+        </h2>
+        <p class="mt-4 max-w-lg text-muted-foreground">
+          Read the code, open an issue, or leave a star if you would like to see it grow. Loops and arrays are next.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a
+          href={GITHUB_URL}
+          class="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <GitHubIcon class="size-4" />
+          Star on GitHub
+          <span data-gh-stars hidden class="border-l border-current/30 pl-2 font-mono text-xs tabular-nums opacity-80"></span>
+        </a>
+        <a
+          href={href("/install")}
+          class="inline-flex h-11 items-center rounded-lg border px-5 text-sm font-medium transition-colors hover:bg-muted"
+          >Install Lipi</a
+        >
+      </div>
+    </div>
+  </section>
+</Base>

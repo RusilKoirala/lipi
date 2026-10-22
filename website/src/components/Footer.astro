@@ -1,0 +1,43 @@
+---
+import { BOOK_URL, GITHUB_URL, href } from "@/lib/site";
+---
+
+<footer class="border-t">
+  <div
+    class="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 pt-12 pb-[max(3rem,env(safe-area-inset-bottom))] sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]"
+  >
+    <div class="max-w-sm">
+      <p class="flex items-baseline gap-2">
+        <span class="font-deva text-3xl leading-none" lang="ne">लिपि</span>
+        <span class="font-mono text-xs text-muted-foreground">lipi</span>
+      </p>
+      <p class="mt-3 text-sm text-muted-foreground">
+        A small programming language you write with Nepali words. Written in Go, following <a
+          href={BOOK_URL}
+          class="underline decoration-crimson underline-offset-2 hover:text-foreground"
+          >Writing an Interpreter in Go</a
+        >.
+      </p>
+    </div>
+
+    <nav aria-label="Learn" class="text-sm">
+      <p class="mb-3 font-medium">Learn</p>
+      <ul class="grid gap-2 text-muted-foreground">
+        <li><a class="hover:text-foreground" href={href("/docs/introduction")}>Introduction</a></li>
+        <li><a class="hover:text-foreground" href={href("/docs/functions")}>Functions</a></li>
+        <li><a class="hover:text-foreground" href={href("/docs/errors")}>Galti reference</a></li>
+        <li><a class="hover:text-foreground" href={href("/examples")}>Examples</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-label="Project" class="text-sm">
+      <p class="mb-3 font-medium">Project</p>
+      <ul class="grid gap-2 text-muted-foreground">
+        <li><a class="hover:text-foreground" href={href("/playground")}>Playground</a></li>
+        <li><a class="hover:text-foreground" href={href("/install")}>Install</a></li>
+        <li><a class="hover:text-foreground" href={GITHUB_URL}>Source on GitHub</a></li>
+        <li><a class="hover:text-foreground" href={`${GITHUB_URL}/issues`}>Report a problem</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
