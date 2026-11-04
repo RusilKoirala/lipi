@@ -18,8 +18,10 @@ import (
 // run executes one program and returns what bhana printed plus any Galti.
 func run(code string) (output string, errs []string) {
 	var out bytes.Buffer
+	// bhana writes here instead of stdout so we can give it to the page
 	evaluator.Out = &out
 
+	// if the interpreter panics show a Galti, the playground should not die
 	defer func() {
 		if r := recover(); r != nil {
 			output = out.String()
@@ -50,6 +52,7 @@ func main() {
 		}
 		output, errs := run(args[0].String())
 
+		// js.ValueOf only understands []any, not []string
 		list := make([]any, len(errs))
 		for i, e := range errs {
 			list[i] = e

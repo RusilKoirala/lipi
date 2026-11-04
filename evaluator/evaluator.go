@@ -18,6 +18,7 @@ var (
 // The browser playground sets this lower because its stack is smaller.
 var MaxCallDepth = 10000
 
+// how deep we are right now
 var callDepth = 0
 
 // Eval walks the tree and runs it.
@@ -113,6 +114,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	return NULL
 }
 
+// run statements one by one, the last value is the result
 func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	var result object.Object = NULL
 
@@ -129,6 +131,8 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	return result
 }
 
+// same as evalProgram but farkau stays wrapped
+// blocks dont make a new scope btw, only function calls do
 func evalBlock(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object = NULL
 
@@ -186,6 +190,7 @@ func evalInfix(node *ast.InfixExpression, left, right object.Object) object.Obje
 	}
 
 	// anything else (sahi/galat, mixed types)
+	// sahi and galat are single objects so comparing pointers works, mixed types are never equal
 	switch op {
 	case "==":
 		return toBool(left == right)
@@ -197,6 +202,7 @@ func evalInfix(node *ast.InfixExpression, left, right object.Object) object.Obje
 	return newError(line, "%s %s %s garna mildaina", left.Type(), op, right.Type())
 }
 
+// the actual maths and comparing for numbers
 func evalIntegerInfix(line int, op string, a, b int64) object.Object {
 	switch op {
 	case "+":
@@ -249,6 +255,7 @@ func applyFunction(node *ast.CallExpression, fn object.Object, args []object.Obj
 				node.Function.String(), len(fn.Parameters), len(args))
 		}
 
+		// stop before Go's stack blows up
 		if callDepth >= MaxCallDepth {
 			return newError(line, "'%s' le aafailai dherai patak bolayo (recursion rokiyena)", node.Function.String())
 		}
@@ -276,6 +283,7 @@ func applyFunction(node *ast.CallExpression, fn object.Object, args []object.Obj
 
 // ---------- helpers ----------
 
+// always give back the same TRUE and FALSE
 func toBool(b bool) *object.Boolean {
 	if b {
 		return TRUE
@@ -288,10 +296,12 @@ func isTruthy(obj object.Object) bool {
 	return obj != FALSE && obj != NULL
 }
 
+// errors stop everything, so we check this after every Eval
 func isError(obj object.Object) bool {
 	return obj != nil && obj.Type() == object.ERROR
 }
 
+// makes the Nepali error: Galti: line 3 ma ...
 func newError(line int, format string, a ...any) *object.Error {
 	msg := fmt.Sprintf(format, a...)
 	return &object.Error{Message: fmt.Sprintf("Galti: line %d ma %s", line, msg)}

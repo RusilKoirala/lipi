@@ -7,6 +7,7 @@ import (
 	"github.com/rusilkoirala/lipi/ast"
 )
 
+// ObjectType is the name of a value's type
 type ObjectType string
 
 // these names show up in Galti messages

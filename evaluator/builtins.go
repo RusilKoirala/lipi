@@ -10,9 +10,10 @@ import (
 	"github.com/rusilkoirala/lipi/object"
 )
 
-// Where bhana prints. The playground (Part 10) will point this somewhere else.
+// Where bhana prints. The playground points this somewhere else (see wasm/main.go).
 var Out io.Writer = os.Stdout
 
+// functions written in Go that every program can call
 var builtins = map[string]*object.Builtin{
 	// bhana("Namaste", naam)  ->  prints: Namaste Ram
 	"bhana": {

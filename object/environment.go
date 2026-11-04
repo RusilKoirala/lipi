@@ -3,13 +3,15 @@ package object
 // Environment stores variables: rakha x = 5;  ->  store["x"] = 5
 type Environment struct {
 	store map[string]Object
-	outer *Environment // the scope around this one (used by functions in Part 5b)
+	outer *Environment // the scope around this one (this is how closures work)
 }
 
+// the top level scope
 func NewEnvironment() *Environment {
 	return &Environment{store: map[string]Object{}}
 }
 
+// new scope inside another one (every function call makes one of these)
 func NewEnclosedEnvironment(outer *Environment) *Environment {
 	env := NewEnvironment()
 	env.outer = outer
@@ -25,6 +27,7 @@ func (e *Environment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 
+// always writes to THIS scope, so rakha inside a function dont change the outer variable
 func (e *Environment) Set(name string, val Object) {
 	e.store[name] = val
 }

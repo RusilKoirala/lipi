@@ -50,6 +50,7 @@ const errorLineField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
+// editor look, it uses the same css variables as the site so dark mode just works
 const theme = EditorView.theme({
   "&": { height: "100%", fontSize: "14px", backgroundColor: "transparent", color: "var(--foreground)" },
   ".cm-scroller": { fontFamily: "var(--font-mono)", lineHeight: "1.7", overflow: "auto" },
@@ -83,6 +84,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   const view = useRef<EditorView | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  // keep the latest callbacks in refs so the editor dont need to be created again
   const onChangeRef = useRef(onChange);
   const onRunRef = useRef(onRun);
   onChangeRef.current = onChange;
@@ -141,6 +143,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // new Galti line from the playground -> move the red band
   useEffect(() => {
     view.current?.dispatch({ effects: setErrorLine.of(errorLine ?? null) });
   }, [errorLine]);
@@ -158,6 +161,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     getValue() {
       return view.current?.state.doc.toString() ?? initialValue;
     },
+    // for the "Go to line" button, the line number is kept inside the document
     jumpTo(line) {
       const v = view.current;
       if (!v) return;

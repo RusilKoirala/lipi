@@ -20,6 +20,7 @@ function encode(code: string): string {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+// opposite of encode, null if someone broke the link
 function decode(s: string): string | null {
   try {
     const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
@@ -29,6 +30,7 @@ function decode(s: string): string | null {
   }
 }
 
+// code from the link: #code=... or #example=...
 function readHash(): { code: string; exampleId: string | null } | null {
   const params = new URLSearchParams(window.location.hash.slice(1));
   const code = params.get("code");
@@ -41,6 +43,7 @@ function readHash(): { code: string; exampleId: string | null } | null {
   return null;
 }
 
+// for showing the right key on the Run button
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
 type Props = {
@@ -61,6 +64,7 @@ export default function Playground({ compact = false }: Props) {
   const [copied, setCopied] = useState(false);
   const [modKey, setModKey] = useState("Ctrl");
 
+  // run the code and show the first Galti line in the editor
   const run = useCallback(async () => {
     setStatus("running");
     setErrLine(null);
@@ -102,6 +106,7 @@ export default function Playground({ compact = false }: Props) {
       .catch(() => setStatus("failed"));
   }, [compact, run]);
 
+  // save the draft on every change so a refresh dont lose your code
   const onChange = useCallback(
     (value: string) => {
       code.current = value;
@@ -116,6 +121,7 @@ export default function Playground({ compact = false }: Props) {
     [compact],
   );
 
+  // open an example and run it right away
   function loadExample(id: string) {
     const ex = getExample(id);
     if (!ex) return;
@@ -127,6 +133,7 @@ export default function Playground({ compact = false }: Props) {
     run();
   }
 
+  // the whole program goes inside the link, no server needed :D
   async function share() {
     const url = `${location.origin}${href("/playground")}#code=${encode(code.current)}`;
     history.replaceState(null, "", `#code=${encode(code.current)}`);
@@ -281,6 +288,7 @@ export default function Playground({ compact = false }: Props) {
   );
 }
 
+// the small text next to Output
 function StatusText({ status, result }: { status: Status; result: LipiResult | null }) {
   if (status === "loading") return <span>Starting…</span>;
   if (status === "running") return <span>Running…</span>;

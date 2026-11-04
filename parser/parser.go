@@ -19,6 +19,7 @@ const (
 	CALL    // jod(x)
 )
 
+// how strong is this operator? anything not listed here is LOWEST and stops the expression
 func precedenceOf(t token.TokenType) int {
 	switch t {
 	case token.EQ, token.NOT_EQ, token.LT, token.GT:
@@ -33,6 +34,7 @@ func precedenceOf(t token.TokenType) int {
 	return LOWEST
 }
 
+// Parser takes tokens from the lexer and builds the tree
 type Parser struct {
 	l      *lexer.Lexer
 	errors []string
@@ -41,6 +43,7 @@ type Parser struct {
 	peekToken token.Token // the token after it
 }
 
+// two nextToken calls so both curToken and peekToken are filled
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l}
 	p.nextToken()
@@ -48,10 +51,12 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
+// every Galti we found while parsing
 func (p *Parser) Errors() []string {
 	return p.errors
 }
 
+// move one token forward
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
@@ -72,6 +77,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	return false
 }
 
+// the line number comes from curToken because the ; was missing at the end of THIS line
 func (p *Parser) expectSemicolon() {
 	if p.peekToken.Type == token.SEMICOLON {
 		p.nextToken()
@@ -80,6 +86,7 @@ func (p *Parser) expectSemicolon() {
 	p.addError(p.curToken.Line, "semicolon birsiyo")
 }
 
+// ParseProgram is the start. it keeps going after an error so you see all Galti at once
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 
@@ -93,12 +100,14 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
+// look at the first token and decide what kind of statement this is
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseRakha()
 	case token.RETURN:
 		return p.parseFarkau()
+	// kaam with a name is a statement, kaam without a name is an expression (goes below)
 	case token.FUNCTION:
 		if p.peekToken.Type == token.IDENT {
 			return p.parseNamedFunction()
@@ -182,6 +191,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 func (p *Parser) parsePrefix() ast.Expression {
 	switch p.curToken.Type {
 	case token.INT:
+		// the error is ignored here, so a number too big for int64 dont give a Galti
 		n, _ := strconv.ParseInt(p.curToken.Literal, 10, 64)
 		return &ast.IntegerLiteral{Token: p.curToken, Value: n}
 	case token.STRING:
@@ -200,6 +210,7 @@ func (p *Parser) parsePrefix() ast.Expression {
 		}
 		return expr
 
+	// ( ) only change the grouping, so no node for them in the tree
 	case token.LPAREN:
 		p.nextToken()
 		expr := p.parseExpression(LOWEST)
@@ -214,6 +225,7 @@ func (p *Parser) parsePrefix() ast.Expression {
 		return p.parseFunction()
 	}
 
+	// nothing can start with this token
 	p.addError(p.curToken.Line, fmt.Sprintf("'%s' bujhina", p.curToken.Literal))
 	return nil
 }
@@ -225,6 +237,7 @@ func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
 		Operator: p.curToken.Literal,
 		Left:     left,
 	}
+	// right side only takes stronger operators, this is why 1 + 2 * 3 works
 	prec := precedenceOf(p.curToken.Type)
 
 	p.nextToken()
@@ -241,6 +254,7 @@ func (p *Parser) parseBlock() *ast.BlockStatement {
 	p.nextToken()
 
 	for p.curToken.Type != token.RBRACE {
+		// file ended but the block never closed
 		if p.curToken.Type == token.EOF {
 			p.addError(block.Token.Line, "'{' kholiyo tara '}' le band gariyena")
 			return nil
@@ -362,6 +376,7 @@ func (p *Parser) parseCall(fn ast.Expression) ast.Expression {
 	}
 	call.Arguments = append(call.Arguments, arg)
 
+	// two nextToken: one to the comma, one to the next argument
 	for p.peekToken.Type == token.COMMA {
 		p.nextToken()
 		p.nextToken()

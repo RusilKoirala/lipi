@@ -21,6 +21,7 @@ export type LipiResult = {
 
 let ready: Promise<void> | null = null;
 
+// add a script tag and wait for it (this is for wasm_exec.js, it comes from Go)
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
@@ -31,6 +32,7 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+// start lipi.wasm
 async function instantiate(go: GoInstance): Promise<WebAssembly.Instance> {
   const url = href("/lipi.wasm");
   try {
@@ -44,6 +46,7 @@ async function instantiate(go: GoInstance): Promise<WebAssembly.Instance> {
   }
 }
 
+// forget the current interpreter so the next run starts a new one
 function reset() {
   ready = null;
   window.runLipi = undefined;
@@ -61,6 +64,7 @@ export function loadLipi(): Promise<void> {
     // If the Go program ever exits, load a fresh one next time.
     go.run(instance).finally(reset);
 
+    // Go sets window.runLipi when it starts, so wait for it (max 2 seconds)
     for (let i = 0; i < 200 && !window.runLipi; i++) {
       await new Promise((r) => setTimeout(r, 10));
     }
@@ -71,6 +75,7 @@ export function loadLipi(): Promise<void> {
   return ready;
 }
 
+// run the code and also measure how long it took
 export async function runLipi(code: string): Promise<LipiResult> {
   await loadLipi();
   const t0 = performance.now();

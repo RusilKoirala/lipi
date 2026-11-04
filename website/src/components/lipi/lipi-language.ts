@@ -2,10 +2,12 @@
 import { HighlightStyle, StreamLanguage } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 
+// these have to match token/token.go and builtins.go
 const KEYWORDS = new Set(["rakha", "kaam", "farkau", "yadi", "natra"]);
 const ATOMS = new Set(["sahi", "galat"]);
 const BUILTINS = new Set(["bhana", "lambai"]);
 
+// a string can go over many lines, so inString remembers it for the next line
 export const lipiLanguage = StreamLanguage.define<{ inString: boolean }>({
   name: "lipi",
   startState: () => ({ inString: false }),

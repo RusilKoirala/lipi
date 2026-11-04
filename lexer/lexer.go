@@ -2,6 +2,7 @@ package lexer
 
 import "github.com/rusilkoirala/lipi/token"
 
+// Lexer goes through the source one byte at a time and makes tokens
 type Lexer struct {
 	input        string
 	position     int
@@ -11,6 +12,7 @@ type Lexer struct {
 	column       int
 }
 
+// line starts at 1 and readChar loads the first character
 func New(input string) *Lexer {
 	l := &Lexer{
 		input: input,
@@ -46,6 +48,7 @@ func (l *Lexer) peekChar() byte {
 	return l.input[l.readPosition]
 }
 
+// NextToken gives the next token every time you call it
 func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespaceAndComments()
 
@@ -54,6 +57,7 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
 	switch l.ch {
+	// = and ! can be two characters, so peek first (== should not become = and =)
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
@@ -103,6 +107,8 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.EOF, "")
 
 	default:
+		// words and numbers already moved past their last character,
+		// so they return early and skip the readChar at the bottom
 		if isLetter(l.ch) {
 			lit := l.readIdentifier()
 			tok = newToken(token.LookupIdent(lit), lit)
@@ -113,6 +119,7 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Line, tok.Column = line, col
 			return tok
 		}
+		// no idea what this character is
 		tok = newToken(token.ILLEGAL, string(l.ch))
 	}
 	l.readChar()
@@ -120,12 +127,14 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
+// lipi dont care about spaces or comments so they never become tokens
 func (l *Lexer) skipWhitespaceAndComments() {
 	for {
 		switch {
 		case l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r':
 			l.readChar()
 		case l.ch == '/' && l.peekChar() == '/':
+			// comment goes till the end of the line
 			for l.ch != '\n' && l.ch != 0 {
 				l.readChar()
 			}
@@ -135,6 +144,8 @@ func (l *Lexer) skipWhitespaceAndComments() {
 	}
 }
 
+// reads till the closing quote, false means the file ended first
+// it only looks for the quote byte so devanagari inside strings just works
 func (l *Lexer) readString() (string, bool) {
 	start := l.position + 1
 	for {
@@ -149,6 +160,7 @@ func (l *Lexer) readString() (string, bool) {
 	}
 }
 
+// small helper, Line and Column get set in NextToken
 func newToken(t token.TokenType, literal string) token.Token {
 	return token.Token{
 		Type:    t,
@@ -159,10 +171,13 @@ func newToken(t token.TokenType, literal string) token.Token {
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
+
+// only english letters for names, so naam works but devanagari names dont (yet)
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+// keep reading while its a digit
 func (l *Lexer) readNumber() string {
 	start := l.position
 	for isDigit(l.ch) {
@@ -171,6 +186,7 @@ func (l *Lexer) readNumber() string {
 	return l.input[start:l.position]
 }
 
+// names can have digits after the first letter: jod2
 func (l *Lexer) readIdentifier() string {
 	start := l.position
 	for isLetter(l.ch) || isDigit(l.ch) {

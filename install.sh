@@ -26,6 +26,7 @@ else
   BOLD=""; DIM=""; RED=""; GREEN=""; RESET=""
 fi
 
+# small print helpers
 info() { printf '%s\n' "$*"; }
 # Show paths under your home folder as ~/...
 tilde() { case "$1" in "$HOME"/*) printf '~%s' "${1#"$HOME"}" ;; *) printf '%s' "$1" ;; esac; }
@@ -69,6 +70,7 @@ fi
 
 # ---------- download ----------
 
+# use whichever one this computer has
 download() {
   if command -v curl >/dev/null 2>&1; then
     curl -fsSL --retry 2 -o "$2" "$1"
@@ -79,6 +81,7 @@ download() {
   fi
 }
 
+# same thing but for checksums (linux has sha256sum, mac has shasum)
 sha256() {
   if command -v sha256sum >/dev/null 2>&1; then
     sha256sum "$1" | cut -d ' ' -f 1
@@ -89,6 +92,7 @@ sha256() {
   fi
 }
 
+# download to a temp folder, and clean it up even if something fails
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT INT TERM
 
@@ -100,6 +104,7 @@ download "$base/$asset" "$tmp/lipi" || fail "download bhayena: $base/$asset"
 download "$base/checksums.txt" "$tmp/checksums.txt" || fail "checksums.txt download bhayena"
 
 step "Checking the download"
+# compare with checksums.txt so a broken download never gets installed
 expected="$(grep " $asset\$" "$tmp/checksums.txt" | cut -d ' ' -f 1 || true)"
 [ -n "$expected" ] || fail "checksums.txt ma $asset bhetiyena"
 actual="$(sha256 "$tmp/lipi")"
@@ -112,10 +117,12 @@ mkdir -p "$BIN_DIR"
 chmod +x "$tmp/lipi"
 mv "$tmp/lipi" "$BIN_DIR/lipi"
 
+# run it once to be sure it really works
 installed="$("$BIN_DIR/lipi" --version 2>/dev/null)" || fail "lipi install bhayo tara chalena"
 
 # ---------- PATH ----------
 
+# already on PATH? then we dont touch any shell file
 case ":$PATH:" in
   *":$BIN_DIR:"*) on_path=1 ;;
   *) on_path=0 ;;
@@ -123,6 +130,7 @@ esac
 
 rc=""
 if [ "$on_path" = "0" ]; then
+  # every shell keeps its config in a different place
   shell_name="$(basename "${SHELL:-sh}")"
   case "$shell_name" in
     zsh)
@@ -145,6 +153,7 @@ if [ "$on_path" = "0" ]; then
 
   mkdir -p "$(dirname "$rc")"
   touch "$rc"
+  # dont add the same line again when someone updates
   if grep -qF "$BIN_DIR" "$rc"; then
     step "PATH is already set in $(tilde "$rc")"
   else

@@ -15,6 +15,7 @@ import (
 // go build -ldflags "-X main.version=v0.1.0"
 var version = "dev"
 
+// the help text, in Nepali of course
 func usage() {
 	fmt.Printf("Lipi %s\n\n", version)
 	fmt.Println("Prayog:")
@@ -24,11 +25,13 @@ func usage() {
 }
 
 func main() {
+	// no file given (no REPL yet)
 	if len(os.Args) < 2 {
 		usage()
 		os.Exit(1)
 	}
 
+	// flags first
 	switch os.Args[1] {
 	case "-v", "--version", "version":
 		fmt.Printf("lipi %s\n", version)
@@ -38,6 +41,7 @@ func main() {
 		return
 	}
 
+	// anything else should be a .lip file
 	path := os.Args[1]
 	if filepath.Ext(path) != ".lip" {
 		fmt.Fprintf(os.Stderr, "Galti: '%s' .lip file hoina\n", path)
@@ -61,6 +65,7 @@ func main() {
 	}
 
 	// 2. run it
+	// only a Galti comes back that we care about, bhana already printed the rest
 	result := evaluator.Eval(program, object.NewEnvironment())
 	if errObj, ok := result.(*object.Error); ok {
 		fmt.Fprintln(os.Stderr, errObj.Message)

@@ -1,5 +1,6 @@
 package token
 
+// TokenType is just a string so its easy to print while debugging
 type TokenType string
 
 // i am just defining the basic struct
@@ -11,9 +12,11 @@ type Token struct {
 }
 
 const (
+	// ILLEGAL = a character lipi dont know, EOF = file ended
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
+	// names and values: naam, 5, "Ram"
 	IDENT  = "IDENT"
 	INT    = "INT"
 	STRING = ""
@@ -26,11 +29,13 @@ const (
 	ASTERISK = "*"
 	SLASH    = "/"
 
+	// comparing things
 	LT     = "<"
 	GT     = ">"
 	EQ     = "=="
 	NOT_EQ = "!="
 
+	// punctuation
 	COMMA     = ","
 	SEMICOLON = ";"
 	LPAREN    = "("
@@ -49,6 +54,8 @@ const (
 	RETURN   = "FARKAU"
 )
 
+// THE NEPALI PART! change a word here and the interpreter changes :D
+// (website highlighting has its own list in website/src so change it there too)
 var keywords = map[string]TokenType{
 	"kaam":   FUNCTION,
 	"rakha":  LET,
@@ -59,6 +66,7 @@ var keywords = map[string]TokenType{
 	"farkau": RETURN,
 }
 
+// keyword gets its own token type, anything else is a normal name
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok

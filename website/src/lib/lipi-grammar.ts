@@ -1,6 +1,7 @@
 // Shiki (TextMate) grammar + themes for highlighting Lipi on static pages and in docs.
 // The editor uses the same colours through the --syn-* CSS variables in global.css.
 
+// the keywords here have to match token/token.go
 export const lipiGrammar = {
   name: "lipi",
   scopeName: "source.lipi",
@@ -35,6 +36,7 @@ type Palette = {
   operator: string;
 };
 
+// same colour rules for light and dark, only the palette changes
 function theme(name: string, type: "light" | "dark", c: Palette) {
   return {
     name,

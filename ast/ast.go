@@ -29,6 +29,7 @@ type Program struct {
 	Statements []Statement
 }
 
+// first token of the program, empty program gives ""
 func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
@@ -36,6 +37,7 @@ func (p *Program) TokenLiteral() string {
 	return ""
 }
 
+// prints the whole program back as code
 func (p *Program) String() string {
 	var out strings.Builder
 	for _, s := range p.Statements {
